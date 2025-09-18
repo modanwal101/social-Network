@@ -1,11 +1,11 @@
-  
- <?php
-    session_start();
-   if(!isset($_SESSION["user"])){
+<?php
+session_start();
+if (isset($_SESSION["user"])) {
     header("Location: index.php");
-   }
-  ?>
- 
+    exit();
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -17,18 +17,22 @@
 </head>
 <body>  
 
-     <h1 class="sec">Social Network Login</h1>
-    <div class="container">
-        <?php
-// session_start();
+<h1 class="sec text-center my-3">Social Network Login</h1>
+<div class="container">
+
+<?php
 if(isset($_POST["login"])){
     $email = $_POST["email"];
     $password = $_POST["password"];
 
     require_once "database.php";
-    $sql ="SELECT * FROM user WHERE email = '$email'";
-    $result = mysqli_query($conn,$sql);
-    $user = mysqli_fetch_array($result,MYSQLI_ASSOC);
+
+    // Prepared statement for security
+    $stmt = $conn->prepare("SELECT * FROM user WHERE Email = ?");
+    $stmt->bind_param("s", $email);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $user = $result->fetch_assoc();
 
     if($user){
         if(password_verify($password, $user["password"])){
@@ -44,12 +48,7 @@ if(isset($_POST["login"])){
 }
 ?>
 
-
-
-
-        
-         <form action="login.php" method="post">
-            
+<form action="login.php" method="post" class="p-4 shadow rounded bg-light">
     <div class="form-group mb-3">
         <label for="email">Email Address</label>
         <input type="email" id="email" name="email" class="form-control" placeholder="Email" required>
@@ -58,11 +57,13 @@ if(isset($_POST["login"])){
         <label for="password">Password</label>
         <input type="password" id="password" name="password" class="form-control" placeholder="Password" required>
     </div>
-    <button type="submit" name="login" class="btn btn-primary">Login</button>
+    <button type="submit" name="login" class="btn btn-primary w-100">Login</button>
 </form>
-     <div ><p>Create Account <a href="signup.php">Sinup</a></p></div>
 
-    </div>
-    
+<div class="text-center mt-3">
+    <p>Create Account <a href="signup.php">Signup</a></p>
+</div>
+
+</div>
 </body>
 </html>
